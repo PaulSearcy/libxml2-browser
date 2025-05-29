@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>XML Validator</title>
+</head>
+
+<body>
+    <h1>XML Validation Form</h1>
+    <form id="validationForm">
+        <label for="xmlDocument">XML File:</label><br>
+        <input type="file" id="xmlDocument" name="xmlDocument" accept=".xml"><br><br>
+
+        <label for="schema">Schema File:</label><br>
+        <input type="file" id="schema" name="schema" accept=".xsd,.rng,.rnc"><br><br>
+
+        <button type="submit">Validate</button>
+    </form>
+
+    <script type="module">
+        import { XmlDocument, XmlBufferInputProvider, XsdValidator, xmlRegisterInputProvider } from './dist/assets/libxml2-wasm-Dh1T5Mk2.js';
+
+
+        const readFileAsBuffer = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = () => {
+                    const arrayBuffer = reader.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    resolve(uint8Array);
+                };
+
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        };
+
+        const form = document.getElementById('validationForm');
+
+        const validateXml = async (xml, xsd) => {
+            const ensureBuffer = (input) =>
+                input instanceof Uint8Array ? input : new TextEncoder().encode(input);
+
+            const xmlBuffer = ensureBuffer(xml)
+            const xsdBuffer = ensureBuffer(xsd)
+
+            const xmlXsdBuffer = await fetch(new URL('/public/xml.xsd', import.meta.url).href)
+                .then(response => response.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer));
+            const mathml3 = await fetch(new URL('/public/mathml3.0/mathml3.xsd', import.meta.url).href)
+                .then(response => response.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer));
+            const mathml3Common = await fetch(new URL('/public/mathml3.0/mathml3-common.xsd', import.meta.url).href)
+                .then(response => response.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer));
+            const mathml3Content = await fetch(new URL('/public/mathml3.0/mathml3-content.xsd', import.meta.url).href)
+                .then(response => response.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer));
+            const mathml3Present = await fetch(new URL('/public/mathml3.0/mathml3-presentation.xsd', import.meta.url).href)
+                .then(response => response.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer));
+            const mathml3Strict = await fetch(new URL('/public/mathml3.0/mathml3-strict-content.xsd', import.meta.url).href)
+                .then(response => response.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer));
+            const bufferProvider = new XmlBufferInputProvider({
+                'http://www.w3.org/2001/xml.xsd': xmlXsdBuffer,
+                'http://www.w3.org/1998/Math/MathML': mathml3,
+                'mathml3.0/mathml3.xsd': mathml3,
+                'http://www.w3.org/1998/Math/MathML/MathML3-common': mathml3Common,
+                'mathml3.0/mathml3-common.xsd': mathml3Common,
+                'http://www.w3.org/1998/Math/MathML/MathML3-content': mathml3Content,
+                'mathml3.0/mathml3-content.xsd': mathml3Content,
+                'http://www.w3.org/1998/Math/MathML/MathML3-presentation': mathml3Present,
+                'mathml3.0/mathml3-presentation.xsd': mathml3Present,
+                'http://www.w3.org/1998/Math/MathML/MathML3-strict-content': mathml3Strict,
+                'mathml3.0/mathml3-strict-content.xsd': mathml3Strict,
+            })
+            xmlRegisterInputProvider(bufferProvider)
+            const schema = XmlDocument.fromBuffer(xsdBuffer)
+            const xmlDoc = XmlDocument.fromBuffer(xmlBuffer)
+
+            const validator = XsdValidator.fromDoc(schema)
+
+
+
+            const validationErrors = []
+            try {
+                validator.validate(xmlDoc)
+            } catch (err) {
+                validationErrors.push(...err.details)
+            }
+
+            xmlDoc.dispose()
+            validator.dispose()
+            schema.dispose()
+
+            return validationErrors
+        };
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const xmlFile = document.getElementById('xmlDocument').files[0];
+            const schemaFile = document.getElementById('schema').files[0];
+            if (!xmlFile || !schemaFile) {
+                alert('Please select both XML and Schema files.');
+                return;
+            }
+            const xml = await readFileAsBuffer(xmlFile);
+            const xsd = await readFileAsBuffer(schemaFile);
+            console.time('Validation Time');
+            const result = await validateXml(xml, xsd);
+            console.timeEnd('Validation Time');
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(result, null, 4);
+            document.body.appendChild(pre);
+            console.log('Validation result:', JSON.stringify(result, null, 4));
+        });
+    </script>
+</body>
+
+</html>
