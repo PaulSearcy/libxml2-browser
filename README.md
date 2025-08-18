@@ -1,6 +1,5 @@
-# WASM
-## Some links
-* Overview - https://developer.mozilla.org/en-US/docs/WebAssembly/Guides/Concepts
-* WAT - https://developer.mozilla.org/en-US/docs/WebAssembly/Guides/Understanding_the_text_format
-* libxml2-wasm - https://github.com/jameslan/libxml2-wasm
-* pyodide - https://pyodide.org/en/stable/
+# Talk Info
+
+- Re-purposed this repo to be a talk about WASM
+- Talk markdown is `talkMarkdown/talk.md`
+- Walkthrough for building libxml2-wasm is `talkMarkdown/walkthrough.md`
