@@ -19,8 +19,8 @@
     </form>
 
     <script type="module">
-        import { XmlDocument, XmlBufferInputProvider, XsdValidator, xmlRegisterInputProvider } from './dist/assets/libxml2-wasm-Dh1T5Mk2.js';
-
+        import { XmlDocument, XmlBufferInputProvider, XsdValidator, xmlRegisterInputProvider } from './libxml2-wasm/lib/index.mjs';
+        // import { XmlDocument, XmlBufferInputProvider, XsdValidator, xmlRegisterInputProvider } from './dist/assets/libxml2-wasm-Dh1T5Mk2.js';
 
         const readFileAsBuffer = (file) => {
             return new Promise((resolve, reject) => {
