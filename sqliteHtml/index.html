@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    <title>Hello, sqlite3</title>
+    <style>
+        .warning,
+        .error {
+            color: red
+        }
+
+        .error {
+            background-color: yellow
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: monospace;
+            white-space: break-spaces;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>1-2-sqlite3 demo</h1>
+    <label for="dbfile">Choose a SQLite database file:</label>
+    <input type="file" id="dbfile" />
+ 
+
+    <script src='sqliteHtml/sqljs-wasm/sql-wasm.js'></script>
+    <script>
+        const main = async () => {
+            const config = {
+                locateFile: filename => `sqliteHtml/sqljs-wasm/sql-wasm.wasm`
+            }
+            window.SQL = await initSqlJs(config)
+        }
+        main();
+        // The `initSqlJs` function is globally provided by all of the main dist files if loaded in the browser.
+        // We must specify this locateFile function if we are loading a wasm file from anywhere other than the current html page's folder.
+        document.getElementById('dbfile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const asArrayBuffer = await file.arrayBuffer();
+                const asUint8Array = new Uint8Array(asArrayBuffer);
+                console.log('Loaded file:');
+                window.db = new SQL.Database(asUint8Array);
+                const result = await window.db.exec('SELECT * FROM matches ORDER BY id');
+                if (result.error) {
+                    console.error('Error executing query:', result.error);
+                    document.body.innerHTML += `<div class="error">Error: ${result.error}</div>`;
+                } else {
+                    console.log('Query result:', result);
+                    const sectionsWithText = window.db.exec('SELECT * FROM sections;')[0].values
+                    const uniqueBooks = [...new Set(sectionsWithText.map(x => x[0]).map(keyStr => keyStr.split('_')[0]))]
+                    
+                    window.booksObject = Object.assign({}, ...uniqueBooks.map(book => {
+                        const bookSections = sectionsWithText.filter(x => x[0].startsWith(book));
+                        return {
+                            [book]: bookSections
+                        }
+                        console.log(`Sections for book ${book}:`, bookSections);
+                    }));
+
+                    console.log('Unique books:', uniqueBooks);
+                    const uniqueBooksString = `${uniqueBooks.map(book => `<li>${book}</li>`).join('')}`;
+                    document.body.innerHTML += `<ul>${uniqueBooksString}</ul><div class="result">Query result: ${JSON.stringify(result[0].values)}</div>`;
+                }
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,3 @@
+[submodule "libxml2-wasm"]
+	path = libxml2-wasm
+	url = https://github.com/jameslan/libxml2-wasm

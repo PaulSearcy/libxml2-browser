@@ -39,14 +39,7 @@
 
         const form = document.getElementById('validationForm');
 
-        const validateXml = async (xml, xsd) => {
-            const ensureBuffer = (input) =>
-                input instanceof Uint8Array ? input : new TextEncoder().encode(input);
-
-            const xmlBuffer = ensureBuffer(xml)
-            const xsdBuffer = ensureBuffer(xsd)
-
-            const xmlXsdBuffer = await fetch(new URL('/public/xml.xsd', import.meta.url).href)
+                    const xmlXsdBuffer = await fetch(new URL('/public/xml.xsd', import.meta.url).href)
                 .then(response => response.arrayBuffer())
                 .then(buffer => new Uint8Array(buffer));
             const mathml3 = await fetch(new URL('/public/mathml3.0/mathml3.xsd', import.meta.url).href)
@@ -77,6 +70,15 @@
                 'http://www.w3.org/1998/Math/MathML/MathML3-strict-content': mathml3Strict,
                 'mathml3.0/mathml3-strict-content.xsd': mathml3Strict,
             })
+
+        const validateXml = async (xml, xsd) => {
+            const ensureBuffer = (input) =>
+                input instanceof Uint8Array ? input : new TextEncoder().encode(input);
+
+            const xmlBuffer = ensureBuffer(xml)
+            const xsdBuffer = ensureBuffer(xsd)
+
+
             xmlRegisterInputProvider(bufferProvider)
             const schema = XmlDocument.fromBuffer(xsdBuffer)
             const xmlDoc = XmlDocument.fromBuffer(xmlBuffer)
