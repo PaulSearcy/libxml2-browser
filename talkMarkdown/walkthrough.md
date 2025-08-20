@@ -21,7 +21,7 @@ git pull
 source ./emsdk_env.sh
 
 # Linux/Mac startup script
-echo 'echo 'source "~/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile'
+echo 'source "~/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile'
 ```
 ## Building libxml2-wasm
 
@@ -42,6 +42,7 @@ cd out
 emconfigure ../libxml2/autogen.sh --without-python --without-http --without-sax1 --without-modules --without-html --without-threads --without-zlib --without-lzma --disable-shared --enable-static
 emmake make
 emcc -L.libs -lxml2 -o libxml2raw.mjs --no-entry -s EXPORT_ES6 -s ALLOW_MEMORY_GROWTH -s ALLOW_TABLE_GROWTH -s EXPORTED_RUNTIME_METHODS=@../binding/exported-runtime-functions.txt -s EXPORTED_FUNCTIONS=@../binding/exported-functions.txt -s SINGLE_FILE
+// You can also add -g4 for source maps too 
 
 /**
  *  From here on out is the maintainers wrapper to create a user friendly interface. 
